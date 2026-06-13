@@ -18,8 +18,8 @@ This image requires `seccomp:unconfined`. Wine needs broader syscall access than
 
 ```bash
 mkdir -p /path/to/config
-wget -O /path/to/config/mmm.ini https://raw.githubusercontent.com/youruser/yourrepo/main/mmm.ini
-wget -O /path/to/config/recipes.xml https://raw.githubusercontent.com/youruser/yourrepo/main/recipes.xml
+wget -O /path/to/config/mmm.ini https://raw.githubusercontent.com/HB64/musicip-wine-1.9.b/main/mmm.ini
+wget -O /path/to/config/recipes.xml https://raw.githubusercontent.com/HB64/musicip-wine-1.9.b/main/recipes.xml
 ```
 
 After that, you can edit either file on the host at any time — restart the container for changes to take effect.
