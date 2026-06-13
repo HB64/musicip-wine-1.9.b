@@ -20,7 +20,7 @@ ENV XDG_RUNTIME_DIR=/tmp/runtime-root
 ENV PUID=1000
 ENV PGID=1000
 
-COPY ["MusicIP/", "/opt/MusicIP/"]
+ADD MusicIP.tgz /opt
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
