@@ -1,0 +1,38 @@
+<recipes>
+    <recipe name="Decade Lock">
+	<constraint cond="seed year != 0" cutoff="0">abs(year - seed year) &lt; 5</constraint>
+    </recipe>
+    <recipe name="Use Ratings">
+	<modifiers>
+	    <modifier weight="2">rating = 5</modifier>
+	    <modifier weight="1.5">rating = 4</modifier>
+            <modifier weight=".5">rating = 2</modifier>
+	</modifiers>
+	<constraint max="0">rating = 1</constraint>
+    </recipe>
+    <recipe name="Prefer Unplayed Tracks">
+	<modifiers>
+	    <modifier weight="2">playcount = 0</modifier>
+	</modifiers>
+    </recipe>
+    <recipe name="Minimize Repeated Tracks">
+	<modifiers>
+	    <modifier weight=".5">lastplayed &gt; now - 7 days</modifier>
+	</modifiers>
+    </recipe>
+    <recipe name="Prefer Artist Type">
+	<modifiers>
+	    <modifier cond="strlen(seed artisttype) > 0" weight="2">seed artisttype = artisttype</modifier>
+	</modifiers>
+    </recipe>
+    <recipe name="Prefer General Seed Genre">
+	<modifiers>
+	    <modifier cond="seed genre != 'Miscellaneous'" weight="2">overlap(seed genre, genre) &gt; 0</modifier>
+	</modifiers>
+    </recipe>
+    <recipe name="Prefer Similar Titles">
+	<modifiers>
+	    <modifier weight="2">overlap(seed title, title) &gt; 0</modifier>
+	</modifiers>
+    </recipe>
+</recipes>
