@@ -10,7 +10,13 @@ The entrypoint automatically creates the `wineuser` account with the `PUID`/`PGI
 
 ### Seccomp
 
-This image requires `seccomp:unconfined`. Wine needs broader syscall access than Docker's default seccomp profile allows to run the legacy 32-bit MusicMagicServer binary.
+Wine needs the `personality` syscall to run the legacy 32-bit MusicMagicServer binary, which Docker's default seccomp profile blocks. This image uses a custom seccomp profile that allows only that specific syscall in addition to Docker's defaults — rather than disabling seccomp entirely.
+
+Download `seccomp.json` from this repo into the same directory as your `compose.yaml` before starting:
+
+```bash
+wget https://raw.githubusercontent.com/hb64/musicip-wine-1.9.b/main/seccomp.json
+```
 
 ### First-time setup
 
@@ -31,7 +37,7 @@ After that, you can edit either file on the host at any time — restart the con
 ```yaml
 services:
   musicip:
-    image: hb64/musicip-wine-1.9.b:latest
+    image: hb1964/musicip-wine-1.9.b:latest
     container_name: musicip
     restart: unless-stopped
     ports:
@@ -50,10 +56,8 @@ services:
       - XDG_RUNTIME_DIR=/tmp/runtime-root
       - LANG=en_US.UTF-8
       - LC_ALL=en_US.UTF-8
-    cap_add:
-      - SYS_PTRACE
     security_opt:
-      - seccomp:unconfined
+      - seccomp=./seccomp.json
 ```
 
 ### docker run
@@ -61,8 +65,7 @@ services:
 ```bash
 docker run -d \
   --name musicip \
-  --cap-add SYS_PTRACE \
-  --security-opt seccomp=unconfined \
+  --security-opt seccomp=./seccomp.json \
   -e PUID=1000 \
   -e PGID=1000 \
   -e WINEARCH=win32 \
@@ -77,7 +80,7 @@ docker run -d \
   -v /path/to/config/mmm.ini:"/home/wineuser/.wine32/drive_c/Program Files/MusicIP/mmm.ini" \
   -v /path/to/config/recipes.xml:"/home/wineuser/.wine32/drive_c/Program Files/MusicIP/recipes.xml" \
   --restart unless-stopped \
-  hb64/musicip-wine-1.9.b:latest
+  hb1964/musicip-wine-1.9.b:latest
 ```
 
 The MusicIP API will be available at `http://localhost:10002`. Check it's up with:
@@ -99,14 +102,13 @@ curl http://localhost:10002/api/version
 | `-v .../MusicIP/moods` | Mood playlists |
 | `-v .../mmm.ini` | MusicIP server configuration (user-editable) |
 | `-v .../recipes.xml` | Mix generation recipes (user-editable) |
-| `--cap-add SYS_PTRACE` | Required by Wine |
-| `--security-opt seccomp=unconfined` | Required by Wine to run the legacy 32-bit binary |
+| `--security-opt seccomp=./seccomp.json` | Allows the `personality` syscall required by Wine |
 
 ## Troubleshooting
 
 **Permission errors on volumes** — Make sure `PUID`/`PGID` match the owner of the mounted directories on the host.
 
-**Container won't start / seccomp errors** — Make sure `seccomp:unconfined` is set; MusicMagicServer cannot start under Docker's default seccomp profile.
+**Container won't start / seccomp errors** — Make sure `seccomp.json` is present in the same directory as `compose.yaml` and was downloaded from this repo before running `docker compose up`.
 
 **Wine error messages in logs (Vulkan, Bluetooth, RPC/OLE)** — These are harmless. Wine logs errors for Windows subsystems MusicIP doesn't use. As long as `curl http://localhost:10002/api/version` responds, everything is fine.
 
@@ -123,10 +125,10 @@ If LMS runs on Linux and MusicIP runs on Windows (native or via Wine, locally or
 
 This repo includes two patched LMS plugin files in [`lms-patches/`](./lms-patches):
 
-- `Plugin.pm` → replaces `Slim/Plugin/MusicMagic/Plugin.pm`
-- `Importer.pm` → replaces `Slim/Plugin/MusicMagic/Importer.pm`
+- `Plugin.pm` ? replaces `Slim/Plugin/MusicMagic/Plugin.pm`
+- `Importer.pm` ? replaces `Slim/Plugin/MusicMagic/Importer.pm`
 
-Both add a simple `C:\music` → `/music` (and `\` → `/`) translation before paths are used. **If your LMS music path isn't `/music`, edit the regex in both files accordingly.**
+Both add a simple `C:\music` ? `/music` (and `\` ? `/`) translation before paths are used. **If your LMS music path isn't `/music`, edit the regex in both files accordingly.**
 
 Mount them into your LMS container (read-only) over the originals:
 
