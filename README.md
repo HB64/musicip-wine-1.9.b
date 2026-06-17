@@ -44,7 +44,7 @@ services:
       - "10002:10002"
     volumes:
       - /path/to/config:/home/wineuser/.wine32/drive_c/users/root/AppData/Roaming/MusicIP
-      - /path/to/music:/home/wineuser/.wine32/drive_c/music
+      - /path/to/music:/music
       - /path/to/config/moods:/home/wineuser/.wine32/drive_c/Program Files/MusicIP/moods
       - /path/to/config/mmm.ini:/home/wineuser/.wine32/drive_c/Program Files/MusicIP/mmm.ini
       - /path/to/config/recipes.xml:/home/wineuser/.wine32/drive_c/Program Files/MusicIP/recipes.xml
@@ -75,7 +75,7 @@ docker run -d \
   -e LC_ALL=en_US.UTF-8 \
   -p 10002:10002 \
   -v /path/to/config:"/home/wineuser/.wine32/drive_c/users/root/AppData/Roaming/MusicIP" \
-  -v /path/to/music:/home/wineuser/.wine32/drive_c/music \
+  -v /path/to/music:/music \
   -v /path/to/config/moods:"/home/wineuser/.wine32/drive_c/Program Files/MusicIP/moods" \
   -v /path/to/config/mmm.ini:"/home/wineuser/.wine32/drive_c/Program Files/MusicIP/mmm.ini" \
   -v /path/to/config/recipes.xml:"/home/wineuser/.wine32/drive_c/Program Files/MusicIP/recipes.xml" \
@@ -89,6 +89,23 @@ The MusicIP API will be available at `http://localhost:10002`. Check it's up wit
 curl http://localhost:10002/api/version
 ```
 
+### Music path inside MusicIP
+
+Your music is mounted into the container at `/music`, which Wine automatically maps to `Z:\music`. This is the path MusicIP will use to find your library.
+
+**Fresh setup** — when MusicIP asks for your music folder on first run, enter:
+```
+Z:\music
+```
+
+**Migrating an existing `.m3lib`** — if your file already contains `Z:\music` paths (from a native Windows install or another MusicIP setup), it will work without any changes.
+
+If your existing `.m3lib` contains `C:\music` paths (from an older version of this image), update them with:
+
+```bash
+sed -i 's|C:\\music|Z:\\music|g' /path/to/config/default.m3lib
+```
+
 ## Parameters
 
 | Parameter | Function |
@@ -98,7 +115,7 @@ curl http://localhost:10002/api/version
 | `LANG` / `LC_ALL` | Locale, e.g. `en_US.UTF-8` |
 | `-p 10002:10002` | MusicIP API |
 | `-v ...AppData/Roaming/MusicIP` | Persistent database, recipes, and configuration |
-| `-v .../drive_c/music` | Your music library (appears to MusicIP as `C:\music`) |
+| `-v .../music:/music` | Your music library (appears to MusicIP as `Z:\music`) |
 | `-v .../MusicIP/moods` | Mood playlists |
 | `-v .../mmm.ini` | MusicIP server configuration (user-editable) |
 | `-v .../recipes.xml` | Mix generation recipes (user-editable) |
