@@ -43,7 +43,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Push README to Docker Hub
-        uses: christian-korneck/update-container-description-action@main
+        uses: christian-korneck/update-container-description-action@v0.5.1
         with:
           vendor: Docker
           destination_container_repo: hb1964/musicip-wine-1.9.b
