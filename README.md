@@ -1,6 +1,6 @@
 # MusicIP MusicMagic (Wine / Windows 1.9.b)
 
-Docker image for running MusicIP MusicMagic â€” the classic music analysis and mix generation server â€” using the **headless Windows 1.9.b** build under Wine. The native Linux build is stuck at version 1.8; this image runs the newer Windows release instead.
+Docker image for running MusicIP MusicMagic — the classic music analysis and mix generation server — using the **headless Windows 1.9.b** build under Wine. The native Linux build is stuck at version 1.8; this image runs the newer Windows release instead.
 
 ## Before you start
 
@@ -10,7 +10,7 @@ The entrypoint automatically creates the `wineuser` account with the `PUID`/`PGI
 
 ### Seccomp
 
-Wine needs the `personality` syscall to run the legacy 32-bit MusicMagicServer binary, which Docker's default seccomp profile blocks. This image uses a custom seccomp profile that allows only that specific syscall in addition to Docker's defaults â€” rather than disabling seccomp entirely.
+Wine needs the `personality` syscall to run the legacy 32-bit MusicMagicServer binary, which Docker's default seccomp profile blocks. This image uses a custom seccomp profile that allows only that specific syscall in addition to Docker's defaults — rather than disabling seccomp entirely.
 
 Download `seccomp.json` from this repo into the same directory as your `compose.yaml` before starting:
 
@@ -28,7 +28,7 @@ wget -O /path/to/config/mmm.ini https://raw.githubusercontent.com/hb64/musicip-w
 wget -O /path/to/config/recipes.xml https://raw.githubusercontent.com/hb64/musicip-wine-1.9.b/main/recipes.xml
 ```
 
-After that, you can edit either file on the host at any time â€” restart the container for changes to take effect.
+After that, you can edit either file on the host at any time — restart the container for changes to take effect.
 
 ## Usage
 
@@ -93,12 +93,12 @@ curl http://localhost:10002/api/version
 
 Your music is mounted into the container at `/music`, which Wine automatically maps to `Z:\music`. This is the path MusicIP will use to find your library.
 
-**Fresh setup** â€” when MusicIP asks for your music folder on first run, enter:
+**Fresh setup** — when MusicIP asks for your music folder on first run, enter:
 ```
 Z:\music
 ```
 
-**Migrating an existing `.m3lib`** â€” if your file already contains `Z:\music` paths (from a native Windows install or another MusicIP setup), it will work without any changes.
+**Migrating an existing `.m3lib`** — if your file already contains `Z:\music` paths (from a native Windows install or another MusicIP setup), it will work without any changes.
 
 If your existing `.m3lib` contains `C:\music` paths (from an older version of this image), update them with:
 
@@ -123,20 +123,20 @@ sed -i 's|C:\\music|Z:\\music|g' /path/to/config/default.m3lib
 
 ## Troubleshooting
 
-**Permission errors on volumes** â€” Make sure `PUID`/`PGID` match the owner of the mounted directories on the host.
+**Permission errors on volumes** — Make sure `PUID`/`PGID` match the owner of the mounted directories on the host.
 
-**Container won't start / seccomp errors** â€” Make sure `seccomp.json` is present in the same directory as `compose.yaml` and was downloaded from this repo before running `docker compose up`.
+**Container won't start / seccomp errors** — Make sure `seccomp.json` is present in the same directory as `compose.yaml` and was downloaded from this repo before running `docker compose up`.
 
-**Wine error messages in logs (Vulkan, Bluetooth, RPC/OLE)** â€” These are harmless. Wine logs errors for Windows subsystems MusicIP doesn't use. As long as `curl http://localhost:10002/api/version` responds, everything is fine.
+**Wine error messages in logs (Vulkan, Bluetooth, RPC/OLE)** — These are harmless. Wine logs errors for Windows subsystems MusicIP doesn't use. As long as `curl http://localhost:10002/api/version` responds, everything is fine.
 
-**Port conflict** â€” Change the host port, e.g. `-p 10003:10002`.
+**Port conflict** — Change the host port, e.g. `-p 10003:10002`.
 
 ## Using with Lyrion Music Server (LMS)
 
 If LMS runs on Linux and MusicIP runs on Windows (native or via Wine, locally or on a different machine), MusicIP returns Windows-style paths (`C:\music\...`) everywhere. LMS expects Linux paths (e.g. `/music/...`), and the bundled **MusicMagic** plugin (used by MusicIP Mixer and SugarCube) does **not** translate between the two. This causes two problems:
 
-- **MusicIP Mixer mixes are empty** â€” every track is logged as "can't be found at that location".
-- **Library scans create duplicate, unplayable track entries** â€” every "MusicIP-import" scan step (including automatic rescans triggered by file changes) adds bogus `C:\music\...`-based entries to the LMS database alongside the correct ones, which can also break SugarCube playback.
+- **MusicIP Mixer mixes are empty** — every track is logged as "can't be found at that location".
+- **Library scans create duplicate, unplayable track entries** — every "MusicIP-import" scan step (including automatic rescans triggered by file changes) adds bogus `C:\music\...`-based entries to the LMS database alongside the correct ones, which can also break SugarCube playback.
 
 ### Patch files
 
