@@ -447,7 +447,7 @@ sub processSong {
 	}
 
 	# Translate MusicIP's Windows-style path to the Linux path LMS uses
-	$songInfo{'file'} =~ s|^C:\\music|/music|i;
+	$songInfo{'file'} =~ s|^Z:\\music|/music|i;
 	$songInfo{'file'} =~ s|\\|/|g;
 
 	main::DEBUGLOG && $log->debug("Exporting song: $songInfo{'file'}");

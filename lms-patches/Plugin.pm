@@ -910,8 +910,7 @@ sub getMix {
 
 	my @songs = split(/\n/, $response->content);
         for my $song (@songs) {
-                $song =~ s|^C:\\music|/music|i;
-                $song =~ s|\\\\|/|g;
+                $song =~ s|^Z:\\music|/music|i;
                 $song =~ s|\\|/|g;
         }
 	my $count = scalar @songs;
