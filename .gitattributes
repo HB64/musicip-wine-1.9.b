@@ -1,0 +1,11 @@
+# Force LF line endings for shell scripts and other text files that get
+# baked into Docker images or run on Linux, regardless of OS or editor used
+# to create/edit them (prevents "exec /entrypoint.sh: no such file or
+# directory" caused by a CRLF shebang line).
+*.sh text eol=lf
+Dockerfile text eol=lf
+dockerfile text eol=lf
+*.json text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.md text eol=lf
