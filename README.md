@@ -105,6 +105,7 @@ Z:\music
 ```
 And hit the "Add" button on the right side of it.
 
+
 **Migrating an existing `.m3lib`** — if your file already contains `Z:\music` paths (from a native Windows install or another MusicIP setup), it will work without any changes.
 
 If your existing `.m3lib` contains `C:\music` paths (from an older version of this image), update them with:
