@@ -1,4 +1,4 @@
-# MusicIP â†’ LMS path translation: substitution order bug
+# MusicIP → LMS path translation: substitution order bug
 
 **Status:** Resolved (current deployment is correct). Documented for future reference in case it resurfaces.
 
