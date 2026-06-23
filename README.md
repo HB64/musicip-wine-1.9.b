@@ -94,25 +94,6 @@ The MusicIP API will be available at `http://localhost:10002`. Check it's up wit
 ```bash
 curl http://localhost:10002/api/version
 ```
-### Music path inside MusicIP
-
-Your music is mounted into the container at `/music`, which Wine automatically maps to `Z:\music`. This is the path MusicIP will use to find your library.
-
-**Fresh setup**  — when on the MusicIP interface you see a part ""Add music folder", type:
-```
-Z:\music
-
-```
-And hit the "Add" button on the right side of it.
-
-
-**Migrating an existing `.m3lib`** — if your file already contains `Z:\music` paths (from a native Windows install or another MusicIP setup), it will work without any changes.
-
-If your existing `.m3lib` contains `C:\music` paths (from an older version of this image), update them with:
-
-```bash
-sed -i 's|C:\\music|Z:\\music|g' /path/to/appdata/default.m3lib
-```
 
 ### Customizing mmm.ini / recipes.xml
 
@@ -129,6 +110,22 @@ By default, `mmm.ini` and `recipes.xml` live only inside the container and reset
 
 On first start with an empty `/config`, the container copies the default `mmm.ini` and `recipes.xml` there for you to edit; `moods/` is created alongside them. From then on, edit the files on the host at any time — MusicMagicServer reads and writes them directly (they're symlinked in, not copied), so nothing you or the app change is ever lost on restart, and the container only ever touches them if they don't already exist.
 
+### Music path inside MusicIP
+
+Your music is mounted into the container at `/music`, which Wine automatically maps to `Z:\music`. This is the path MusicIP will use to find your library.
+
+**Fresh setup** — when MusicIP asks for your music folder on first run, enter:
+```
+Z:\music
+```
+
+**Migrating an existing `.m3lib`** — if your file already contains `Z:\music` paths (from a native Windows install or another MusicIP setup), it will work without any changes.
+
+If your existing `.m3lib` contains `C:\music` paths (from an older version of this image), update them with:
+
+```bash
+sed -i 's|C:\\music|Z:\\music|g' /path/to/appdata/default.m3lib
+```
 
 ## Parameters
 
@@ -213,3 +210,14 @@ docker start lms
 After this, MusicIP-import scans should produce clean `file:///music/...` URLs going forward, and both MusicIP Mixer and SugarCube should queue and play tracks correctly.
 
 > These patches address an upstream LMS MusicMagic plugin limitation (no path translation, despite `server.prefs` having an unused `pathmap` setting). If/when this is fixed upstream, these patches and volume mounts can be removed.
+
+### ⚠️ Important: read before your first LMS start
+
+Running MusicIP 1.9.b alongside LMS on a mixed (Wine/Linux) system involves several layers that must all be correct **before** LMS starts for the first time. Getting any one of them wrong causes silent failures that corrupt the LMS database in a way that cannot be repaired without a full rebuild.
+
+See **[docs/musicip-19b-mixed-systems.md](./docs/musicip-19b-mixed-systems.md)** for:
+- A full explanation of why failures are silent and hard to detect
+- The complete list of layers that must be correct simultaneously
+- The log signatures to look for when something goes wrong
+- Why recovery requires a full LMS rebuild (no partial fix exists)
+- Why MusicIP 1.8 (native Linux) does not have this problem
