@@ -97,11 +97,11 @@ Switching between the 1.8 and 1.9.b containers is safe. A standard **"Wipe libra
 ```yaml
 # compose.yaml MusicIP container
 volumes:
-  - /mnt/2TB1/Muziek:/music          # /music — not the host path!
+  - /path/to/music:/music          # /music — not the host path!
 
 # compose.yaml LMS container
 volumes:
-  - /mnt/2TB1/Muziek:/music          # Same internal path as the MusicIP container
+  - /path/to/music:/music          # Same internal path as the MusicIP container
   - /path/to/Plugin.pm:/usr/share/squeezeboxserver/Slim/Plugin/MusicMagic/Plugin.pm
   - /path/to/Importer.pm:/usr/share/squeezeboxserver/Slim/Plugin/MusicMagic/Importer.pm
 ```
