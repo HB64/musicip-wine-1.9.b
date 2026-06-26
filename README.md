@@ -156,19 +156,20 @@ sed -i 's|C:\\music|Z:\\music|g' /path/to/appdata/default.m3lib
 
 ## Using with Lyrion Music Server (LMS)
 
-If LMS runs on Linux and MusicIP runs on Windows (native or via Wine, locally or on a different machine), MusicIP returns Windows-style paths (`Z:\music\...`) everywhere. LMS expects Linux paths (e.g. `/music/...`), and the bundled **MusicMagic** plugin (used by MusicIP Mixer and SugarCube) does **not** translate between the two. This causes two problems:
+When MusicIP 1.9.b runs under Wine, it stores and returns paths in Windows format (`Z:\music\...`). LMS runs on Linux and expects `/music/...`. Two components need to handle this translation: the MusicMagic plugin patches (for Moods Mixer) and SugarCube's Dynamic Path Conversion (for SugarCube mixing).
 
-- **MusicIP Mixer mixes are empty** — every track is logged as "can't be found at that location".
-- **Library scans create duplicate, unplayable track entries** — every "MusicIP-import" scan step (including automatic rescans triggered by file changes) adds bogus `Z:\music\...`-based entries to the LMS database alongside the correct ones, which can also break SugarCube playback.
+> **Switching between 1.8 and 1.9.b is safe.** A standard "Wipe library and rescan all" in LMS is sufficient when switching versions — no container rebuild is required.
 
-### Patch files
+### MusicIP Moods Mixer — patch files
+
+The patches are required for **MusicIP Moods Mixer** (LMS's native browse-by-mix / Mood Mix). They are **not** required for SugarCube, which has its own path translation. When running MusicIP 1.8 (native Linux), the patches are a no-op — safe to include but not needed.
 
 This repo includes two patched LMS plugin files in [`lms-patches/`](./lms-patches):
 
 - `Plugin.pm` — replaces `Slim/Plugin/MusicMagic/Plugin.pm`
 - `Importer.pm` — replaces `Slim/Plugin/MusicMagic/Importer.pm`
 
-Both add a simple `Z:\music` → `/music` (and `\` → `/`) translation before paths are used. **If your LMS music path isn't `/music`, edit the regex in both files accordingly.**
+Both add a `Z:\music` → `/music` (and `\` → `/`) translation before paths are used. **If your LMS music path isn't `/music`, edit the regex in both files accordingly.**
 
 Download them into a directory on the host before starting your LMS container:
 
@@ -188,36 +189,35 @@ services:
       - /path/to/lms-patches/Importer.pm:/lms/Slim/Plugin/MusicMagic/Importer.pm:ro
 ```
 
-### One-time database cleanup
-
-If you've been running without these patches, your LMS library database likely already contains bogus entries. After applying the `Importer.pm` patch, remove the old ones once:
-
-```bash
-docker stop lms
-
-python3 - <<'EOF'
-import sqlite3
-conn = sqlite3.connect('/path/to/lms/cache/library.db')
-cur = conn.cursor()
-cur.execute("DELETE FROM tracks WHERE url LIKE '///./Z:%'")
-conn.commit()
-print('Deleted:', cur.rowcount)
-EOF
-
-docker start lms
-```
-
-After this, MusicIP-import scans should produce clean `file:///music/...` URLs going forward, and both MusicIP Mixer and SugarCube should queue and play tracks correctly.
-
 > These patches address an upstream LMS MusicMagic plugin limitation (no path translation, despite `server.prefs` having an unused `pathmap` setting). If/when this is fixed upstream, these patches and volume mounts can be removed.
 
-### ⚠️ Important: read before your first LMS start
+### SugarCube — Dynamic Path Conversion
 
-Running MusicIP 1.9.b alongside LMS on a mixed (Wine/Linux) system involves several layers that must all be correct **before** LMS starts for the first time. Getting any one of them wrong causes silent failures that corrupt the LMS database in a way that cannot be repaired without a full rebuild.
+SugarCube has its own path translation pipeline independent of the patches above. When using MusicIP 1.9.b, enable and configure Dynamic Path Conversion in the SugarCube global settings:
 
-See **[docs/musicip-19b-mixed-systems.md](./docs/musicip-19b-mixed-systems.md)** for:
-- A full explanation of why failures are silent and hard to detect
-- The complete list of layers that must be correct simultaneously
-- The log signatures to look for when something goes wrong
-- Why recovery requires a full LMS rebuild (no partial fix exists)
-- Why MusicIP 1.8 (native Linux) does not have this problem
+```
+Enable Dynamic Path Conversion: ✓ checked
+DPC (LMS) - Set #1 Destination:  /music
+DPC (MusicIP) - Set #1 Source:   Z:\music
+```
+
+When running MusicIP 1.8, these settings are a no-op — safe to leave in place.
+
+### ⚠️ MusicIP 1.9.b filter behaviour — stricter than 1.8
+
+MusicIP 1.9.b enforces stricter rules for filter conditions than 1.8. Filters that worked in 1.8 can silently fail in 1.9.b with `MUSICIP RETURNED NOTHING`. **Review all your filters in the MusicIP Mixer GUI after migrating from 1.8.**
+
+Known differences:
+
+- **"Match ALL" with multiple Artist conditions** — no track can match multiple artists simultaneously, so the filter always returns nothing. Change to **"Match ANY"**.
+- **Mixing `is` and `is not` conditions** — combining positive and negative conditions in the same filter fails in 1.9.b even when logically valid. Keep filters to either all `is` or all `is not` conditions.
+
+Test a filter directly via the API to verify it works before relying on it in SugarCube:
+
+```bash
+curl "http://localhost:10002/api/mix?song=Z%3A%5Cmusic%5C<encoded path>&size=5&filter=<filtername>"
+```
+
+### Further documentation
+
+See **[docs/musicip-19b-mixed-systems.md](./docs/musicip-19b-mixed-systems.md)** for a full technical breakdown including log signatures, root cause analysis, and the complete list of configuration layers.
