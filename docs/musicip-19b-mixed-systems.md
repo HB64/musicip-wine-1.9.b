@@ -74,7 +74,7 @@ MusicIP 1.9.b is a Windows binary running under Wine. It stores paths internally
 
 The patches are **only required for the MusicIP Moods Mixer** (LMS's native MusicIP browse-by-mix / Mood Mix / instant mix). SugarCube has its own path translation pipeline and does not use these files for its mixing.
 
-When running MusicIP **1.8** (native Linux), both MusicIP and LMS use `/music/...` paths natively — the patches are a no-op and can safely be left in place or omitted.
+When running MusicIP **1.8** (native Linux or Docker Linux), both MusicIP and LMS use `/music/...` paths natively — the patches are a no-op and can safely be left in place or omitted.
 
 ### What requires SugarCube DPC configuration
 
