@@ -20,7 +20,10 @@ ENV PUID=1000
 ENV PGID=1000
 
 ADD MusicIP.tgz /opt
-COPY entrypoint.sh /entrypoint.sh
+RUN sed -i 's/\r//' /opt/entrypoint.sh \
+    && mv /opt/entrypoint.sh /entrypoint.sh \
+    && chmod +x /entrypoint.sh
+
 RUN chmod +x /entrypoint.sh
 
 CMD ["/entrypoint.sh"]
