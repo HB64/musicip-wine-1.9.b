@@ -8,17 +8,7 @@ Docker image for running MusicIP MusicMagic — the classic music analysis and m
 
 The entrypoint automatically creates the `wineuser` account with the `PUID`/`PGID` you provide and takes ownership of the Wine prefix on startup, so no manual `chown` step is required. Just set `PUID`/`PGID` to match the owner of your music (and, if used, config) directory on the host.
 
-The container also runs with all Linux capabilities dropped except the handful actually needed for that setup step (`CHOWN`, `SETUID`, `SETGID`, `DAC_OVERRIDE`, `FOWNER`) — see the compose/run examples below.
-
-### Seccomp
-
-Wine needs the `personality`, `modify_ldt`, `get_thread_area` and `set_thread_area` syscalls to run the 32-bit MusicMagicServer binary, which a from-scratch minimal seccomp profile would block. This image ships a seccomp profile based on Docker's own default profile, trimmed of syscalls that are either architecture-irrelevant on x86_64 or definitely unused by this workload (legacy DOS virtual-mode syscalls, unconditional `ptrace`). It's used together with `cap_drop: ALL`, which is what actually neutralizes the profile's capability-gated entries (`mount`, `bpf`, `reboot`, etc.) rather than the syscall list alone.
-
-Download `seccomp.json` from this repo into the same directory as your `compose.yaml` before starting:
-
-```bash
-wget https://raw.githubusercontent.com/hb64/musicip-wine-1.9.b/main/seccomp.json
-```
+The container also runs with all Linux capabilities dropped except the handful actually needed for that setup step (`CHOWN`, `SETUID`, `SETGID`, `DAC_OVERRIDE`, `FOWNER`) — see the compose/run examples below. The entrypoint uses `setpriv` (part of `util-linux`, already present in the base image) to drop from root to `wineuser` before launching Wine and MusicMagicServer. Unlike an earlier version of this image, no custom seccomp profile is required — Wine's `personality` syscall runs fine under Docker's own default seccomp profile when `setpriv` handles the privilege drop, so there's no `seccomp.json` to download or maintain.
 
 ### mmm.ini / recipes.xml (optional)
 
@@ -50,7 +40,6 @@ services:
       - LANG=en_US.UTF-8
       - LC_ALL=en_US.UTF-8
     security_opt:
-      - seccomp=./seccomp.json
       - no-new-privileges:true
     cap_drop:
       - ALL
@@ -67,7 +56,6 @@ services:
 ```bash
 docker run -d \
   --name musicip \
-  --security-opt seccomp=./seccomp.json \
   --security-opt no-new-privileges:true \
   --cap-drop ALL \
   --cap-add CHOWN \
@@ -112,12 +100,14 @@ On first start with an empty `/config`, the container copies the default `mmm.in
 
 ### Music path inside MusicIP
 
-Your music is mounted into the container at `/music`, which Wine automatically maps to `Z:\music`. This is the path MusicIP will use to find your library.
+Your music is mounted into the container at `/music`, which Wine automatically maps to `Z:\music`. This is the path MusicIP will use to find your library, and the "Add music folder" button on the web UI (`http://localhost:10002`) is pre-filled with it — just click **Add music**, no typing required for a standard setup.
 
-**Fresh setup** — when MusicIP asks for your music folder on first run, enter:
-```
-Z:\music
-```
+**If your setup differs** — for example if you mounted your music volume to a different container path instead of `/music` — you'll need to change it in two places so they stay in sync:
+
+1. **`compose.yaml`** — change the container-side path in the volume mount, e.g. `/path/to/music:/mymusic:ro`.
+2. **Web UI** — tick **"Music folder differs from Z:\music"** under Add music folder, and enter the matching Wine path yourself (e.g. `Z:\mymusic`, since Wine's `Z:` drive always maps to the container's `/`).
+
+**Fresh setup** — for a standard `/music` mount, just click **Add music** in the web UI; the field is already filled with `Z:\music`.
 
 **Migrating an existing `.m3lib`** — if your file already contains `Z:\music` paths (from a native Windows install or another MusicIP setup), it will work without any changes.
 
@@ -138,7 +128,6 @@ sed -i 's|C:\\music|Z:\\music|g' /path/to/appdata/default.m3lib
 | `-v ...AppData/Roaming/MusicIP` | Persistent database and MusicIP user data |
 | `-v .../music:/music:ro` | Your music library, read-only (appears to MusicIP as `Z:\music`) |
 | `-v .../config:/config` | *(optional)* Persistent, editable `mmm.ini`, `recipes.xml` and `moods/` |
-| `--security-opt seccomp=./seccomp.json` | Allows the syscalls Wine needs (`personality`, `modify_ldt`, etc.) |
 | `--security-opt no-new-privileges:true` | Blocks privilege escalation via setuid binaries inside the container |
 | `--cap-drop ALL` + `--cap-add ...` | Restricts the container to only the capabilities its setup steps actually use |
 
@@ -146,13 +135,13 @@ sed -i 's|C:\\music|Z:\\music|g' /path/to/appdata/default.m3lib
 
 **Permission errors on volumes** — Make sure `PUID`/`PGID` match the owner of the mounted directories on the host.
 
-**Container won't start / seccomp errors** — Make sure `seccomp.json` is present in the same directory as `compose.yaml` and was downloaded from this repo before running `docker compose up`.
-
 **Container won't start / "Operation not permitted" in logs** — Usually means one of the dropped capabilities is needed after all. Check which syscall or operation failed in the log and add the matching `--cap-add` back; the five listed above cover a stock setup.
 
 **Wine error messages in logs (Vulkan, Bluetooth, RPC/OLE)** — These are harmless. Wine logs errors for Windows subsystems MusicIP doesn't use. As long as `curl http://localhost:10002/api/version` responds, everything is fine.
 
 **Port conflict** — Change the host port, e.g. `-p 10003:10002`.
+
+**Music folder not found / "Add music folder" fails** — Confirm the container-side path in your volume mount (`compose.yaml`) matches what you enter in the web UI (see "Music path inside MusicIP" above). They must point to the same folder.
 
 ## Using with Lyrion Music Server (LMS)
 
