@@ -107,7 +107,7 @@ Your music is mounted into the container at `/music`, which Wine automatically m
 1. **`compose.yaml`** — change the container-side path in the volume mount, e.g. `/path/to/music:/mymusic:ro`.
 2. **Web UI** — tick **"Music folder differs from Z:\music"** under Add music folder, and enter the matching Wine path yourself (e.g. `Z:\mymusic`, since Wine's `Z:` drive always maps to the container's `/`).
 
-**Fresh setup** — for a standard `/music` mount, just click **Add music** in the web UI; the field is already filled with `Z:\music`.
+**Fresh setup** — for a standard `/music` mount, just click **Add music** in the web UI; the field is already filled with   `Z:\music`.
 
 **Migrating an existing `.m3lib`** — if your file already contains `Z:\music` paths (from a native Windows install or another MusicIP setup), it will work without any changes.
 
