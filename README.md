@@ -201,6 +201,19 @@ Known differences:
 - **"Match ALL" with multiple Artist conditions** — no track can match multiple artists simultaneously, so the filter always returns nothing. Change to **"Match ANY"**.
 - **Mixing `is` and `is not` conditions** — combining positive and negative conditions in the same filter fails in 1.9.b even when logically valid. Keep filters to either all `is` or all `is not` conditions.
 
+#### ⚠️ "Match ANY" + a single `is not` condition can silently return your whole library
+
+This one isn't a 1.9.b-specific regression — it's how AND/OR always worked in MusicIP — but it's very easy to trip over, and the result looks like the filter is simply being ignored.
+
+**Match ANY** is an OR across every condition in the filter. Adding even one `Artist is not X` (or `Genre is not X`) condition to an otherwise well-targeted Match ANY filter can undo it almost entirely: `NOT(X)` is true for nearly every track in your library except X's own, so under OR logic that single condition alone lets nearly everything through, regardless of how narrow the other conditions are.
+
+Confirmed example: a Match ANY filter with 9 inclusive `is` conditions (a curated set of genres/artists) correctly returned tracks spanning 6 genres. Adding one `Artist is not <name>` condition to the same filter — still Match ANY — widened the result to 26 genres and 3,633 artists: essentially the entire library.
+
+MusicIP's filter only has one match mode for its whole condition list, so there's no way to express "(any of these) AND (not this)" inside a single filter. Two practical workarounds:
+
+- **Keep exclusions out of Match ANY filters.** If you need both inclusion and exclusion logic, split it into two filters (one Match ANY for inclusions, one Match ALL for exclusions) and combine them at the recipe level, if your recipe setup supports AND-ing filters together.
+- **Use SugarCube's artist weighting instead of a MIP exclusion filter.** SugarCube can assign a negative weight to specific artists (up to 3 per weighting slot) to make them play less often, without needing to exclude them via a filter condition at all. For "I basically never want to hear artist X" this sidesteps the Match ANY/`is not` trap entirely, since the filter itself never needs a negative condition.
+
 Test a filter directly via the API to verify it works before relying on it in SugarCube:
 
 ```bash
