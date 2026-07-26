@@ -1,0 +1,103 @@
+<recipes>
+	<recipe name="Default without classic">
+	 <constraint max="0">genre contains 'Christmas'</constraint>
+	 <constraint max="0">genre contains 'Comedy'</constraint>
+	 <constraint max="0">genre contains 'Podcast'</constraint>
+	 <constraint max="0">genre contains 'classical'</constraint>
+	 <constraint max="0">genre contains 'Speech'</constraint>
+	</recipe>
+	
+	<recipe name="Hits of time and genre">
+	 <popularity type="hits"/>
+	 <genre weight="3"/>
+	 <era weight="2"/>
+	</recipe>
+
+    <recipe name="Decade Lock">
+	<constraint cond="seed year != 0" cutoff="0">abs(year - seed year) &lt; 10</constraint>
+    </recipe>
+
+    <recipe name="Use Ratings">
+	<modifiers>
+	    <modifier weight="2">rating = 5</modifier>
+	    <modifier weight="1.5">rating = 4</modifier>
+            <modifier weight=".5">rating = 2</modifier>
+	</modifiers>
+	<constraint max="0">rating = 1</constraint>
+    </recipe>
+
+    <recipe name="Prefer Unplayed Tracks">
+	<modifiers>
+	    <modifier weight="2">playcount = 0</modifier>
+	</modifiers>
+    </recipe>
+
+    <recipe name="Minimize Repeated Tracks">
+	<modifiers>
+	    <modifier weight=".5">lastplayed &gt; now - 7 days</modifier>
+	</modifiers>
+    </recipe>
+
+    <recipe name="Prefer Artist Type">
+	<modifiers>
+	    <modifier cond="strlen(seed artisttype) > 0" weight="2">seed artisttype = artisttype</modifier>
+	</modifiers>
+    </recipe>
+
+    <recipe name="Prefer General Seed Genre">
+	<modifiers>
+	    <modifier cond="seed genre != 'Miscellaneous'" weight="2">overlap(seed genre, genre) &gt; 0</modifier>
+	</modifiers>
+    </recipe>
+
+    <recipe name="Prefer Similar Titles">
+	<modifiers>
+	    <modifier weight="2">overlap(seed title, title) &gt; 0</modifier>
+	</modifiers>
+    </recipe>
+
+    <recipe name="Betty Crocker">
+        <input type="slider" min=".5" max="2" value="1" param="scale" label="Scale" minLabel=".5" maxLabel="2"/>
+        <input param="era" label="Era" type="checkbox" value="off"/>
+        <input param="ratings" label="Ratings" type="checkbox" value="off"/>
+        <input param="prefunplayed" label="Favor Unplayed" type="checkbox" value="off"/>
+        <input param="preflastplayed" label="Deprecate Recently Played" type="checkbox" value="off"/>
+        <input param="prefgenre" label="Prefer Seed Genre" type="checkbox" value="off"/>
+        <input param="preftype" label="Prefer Artist Type" type="checkbox" value="off"/>
+        <input param="preftitle" label="Prefer Similar Titles" type="checkbox" value="off"/>
+
+      <modifiers cond="param ratings = 1">
+        <modifier weight="2">rating = 5</modifier>
+        <modifier weight="1.5">rating = 4</modifier>
+        <modifier weight=".5">rating = 2</modifier>
+      </modifiers>
+      <constraint cond="param ratings = 1" max="0">rating = 1</constraint>
+      <modifiers>
+        <modifier cond="param era = 1 and seed year != 0" weight="2">abs(year - seed year) &lt; 10</modifier>
+        <modifier cond="param refunplayed = 1" weight="2">playcount = 0</modifier>
+        <modifier cond="param preflastplayed = 1" weight=".5">lastplayed &gt; now - 7 days</modifier>
+        <modifier cond="param preftype = 1 and strlen(seed artisttype) > 0" weight="2">seed artisttype = artisttype</modifier>
+        <modifier cond="param prefgenre = 1 and seed genre != 'Miscellaneous'" weight="2">overlap(seed genre, genre) &gt; 0</modifier>
+        <modifier cond="param preftitle = 1" weight="2">overlap(seed title, title) &gt; 0</modifier>
+      </modifiers>
+    </recipe>
+
+    <recipe name="Conditional Exclusions">
+	<input param="era" label="Restrict Era" type="checkbox" value="off"/>
+	<input param="ratings" label="Rating Over 2" type="checkbox" value="off"/>
+	<input param="prefunplayed" label="Only Unplayed" type="checkbox" value="off"/>
+	<input param="preflastplayed" label="Remove Recently Played" type="checkbox" value="off"/>
+	<input param="prefgenre" label="Prefer Seed Genre" type="checkbox" value="off"/>
+	<input param="preftype" label="Prefer Artist Type" type="checkbox" value="off"/>
+	<input param="preftitle" label="Prefer Similar Titles" type="checkbox" value="off"/>
+
+	<constraint cond="param era = 1 and seed year != 0" cutoff="0">abs(year - seed year) &lt; 10</constraint>
+	<constraint cond="param ratings = 1" cutoff="0">rating &gt; 2</constraint>
+	<constraint cond="param refunplayed = 1" cutoff="0">playcount = 0</constraint>
+	<constraint cond="param preflastplayed = 1" cutoff="0">lastplayed &lt; now - 7 days</constraint>
+	<constraint cond="param preftype = 1 and strlen(seed artisttype) > 0" cutoff="0">seed artisttype = artisttype</constraint>
+	<constraint cond="param prefgenre = 1 and seed genre != 'Miscellaneous'" cutoff="0">overlap(seed genre, genre) &gt; 0</constraint>
+	<constraint cond="param preftitle = 1" cutoff="0">overlap(seed title, title) &gt; 0</constraint>
+    </recipe>
+
+</recipes>
