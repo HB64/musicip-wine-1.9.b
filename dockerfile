@@ -7,8 +7,7 @@ RUN dpkg --add-architecture i386 && \
         wine32:i386 \
         xvfb \
         ca-certificates \
-        locales \
-        gosu && \
+        locales && \
     echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && \
     locale-gen && \
     rm -rf /var/lib/apt/lists/*
@@ -19,11 +18,9 @@ ENV XDG_RUNTIME_DIR=/tmp/runtime-root
 ENV PUID=1000
 ENV PGID=1000
 
-ADD MusicIP.tgz /opt
-RUN sed -i 's/\r//' /opt/entrypoint.sh \
-    && mv /opt/entrypoint.sh /entrypoint.sh \
+COPY MusicIP /opt/MusicIP
+RUN sed -i 's/\r//' /opt/MusicIP/entrypoint.sh \
+    && mv /opt/MusicIP/entrypoint.sh /entrypoint.sh \
     && chmod +x /entrypoint.sh
-
-RUN chmod +x /entrypoint.sh
 
 CMD ["/entrypoint.sh"]
