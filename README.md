@@ -177,9 +177,8 @@ SugarCube has its own path translation pipeline independent of the patches above
 Enable Dynamic Path Conversion: ✓ checked
 DPC (LMS) - Set #1 Destination:  /music
 DPC (MusicIP) - Set #1 Source:   Z:\music
-```
+``
 
-When running MusicIP 1.8, these settings are a no-op — safe to leave in place.
 
 ### ⚠️ MusicIP 1.9.b filter behaviour — stricter than 1.8
 
