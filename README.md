@@ -128,6 +128,8 @@ LMS's native MusicMagic plugin has no way to translate the Windows-style paths (
 
 > **Warning:** Remove/disable LMS's built-in **MusicIP** plugin before installing MusicMagicCE. MusicMagicCE is a drop-in *replacement*, not an addition — running both at the same time will conflict.
 
+> **Note:** Running LMS `master`/dev (or a future release built from it)? You don't need MusicMagicCE — the stock **MusicIP** plugin already has Path Conversion, a configurable host, and genre filters built in natively.
+
 In LMS, go to **Settings → Plugins → Additional Repositories** and add:
 
 \`\`\`
