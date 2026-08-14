@@ -122,7 +122,7 @@ When MusicIP 1.9.b runs under Wine, it stores and returns paths in Windows forma
 
 > **Switching between 1.8 and 1.9.b is safe.** A standard "Wipe library and rescan all" in LMS is sufficient when switching versions — no container rebuild is required.
 
-### MusicIP Moods Mixer — MusicMagicCE plugin (required)
+### ⚠️ MusicIP Moods Mixer — MusicMagicCE plugin (required)
 
 LMS's native MusicMagic plugin has no way to translate the Windows-style paths (`Z:\music\...`) that MusicIP reports under Wine into the Linux paths (`/music/...`) LMS expects, so **MusicIP Moods Mixer** (LMS's native browse-by-mix / Mood Mix) won't find any tracks without this. Install **[MusicMagicCE](https://github.com/HB64/Lyrion-MusicMagic)** — a drop-in replacement for LMS's stock MusicMagic plugin (for LMS 9.1.x) that adds a configurable **Dynamic Path Conversion** setting for exactly this, plus a configurable host and genre filters.
 
