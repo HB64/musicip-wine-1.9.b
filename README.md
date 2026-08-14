@@ -149,36 +149,25 @@ When MusicIP 1.9.b runs under Wine, it stores and returns paths in Windows forma
 
 > **Switching between 1.8 and 1.9.b is safe.** A standard "Wipe library and rescan all" in LMS is sufficient when switching versions — no container rebuild is required.
 
-### MusicIP Moods Mixer — patch files
+### MusicIP Moods Mixer — MusicMagicCE plugin (required)
 
-The patches are required for **MusicIP Moods Mixer** (LMS's native browse-by-mix / Mood Mix). They are **not** required for SugarCube, which has its own path translation. When running MusicIP 1.8 (native Linux), the patches are a no-op — safe to include but not needed.
+LMS's native MusicMagic plugin has no way to translate the Windows-style paths (`Z:\music\...`) that MusicIP reports under Wine into the Linux paths (`/music/...`) LMS expects, so **MusicIP Moods Mixer** (LMS's native browse-by-mix / Mood Mix) won't find any tracks without this. Install **[MusicMagicCE](https://github.com/HB64/Lyrion-MusicMagic)** — a drop-in replacement for LMS's stock MusicMagic plugin (for LMS 9.1.x) that adds a configurable **Dynamic Path Conversion** setting for exactly this, plus a configurable host and genre filters.
 
-This repo includes two patched LMS plugin files in [`lms-patches/`](./lms-patches):
+In LMS, go to **Settings → Plugins → Additional Repositories** and add:
 
-- `Plugin.pm` — replaces `Slim/Plugin/MusicMagic/Plugin.pm`
-- `Importer.pm` — replaces `Slim/Plugin/MusicMagic/Importer.pm`
+\`\`\`
+https://raw.githubusercontent.com/HB64/Lyrion-MusicMagic/main/public.xml
+\`\`\`
 
-Both add a `Z:\music` → `/music` (and `\` → `/`) translation before paths are used. **If your LMS music path isn't `/music`, edit the regex in both files accordingly.**
+Install **MusicMagicCE** from the plugin list, then in its settings enable Dynamic Path Conversion:
 
-Download them into a directory on the host before starting your LMS container:
+\`\`\`
+Enable Dynamic Path Conversion: ✓ checked
+MusicIP path (source):      Z:\music
+Lyrion path (destination):  /music
+\`\`\`
 
-```bash
-mkdir -p /path/to/lms-patches
-wget -O /path/to/lms-patches/Plugin.pm https://raw.githubusercontent.com/hb64/musicip-wine-1.9.b/main/lms-patches/Plugin.pm
-wget -O /path/to/lms-patches/Importer.pm https://raw.githubusercontent.com/hb64/musicip-wine-1.9.b/main/lms-patches/Importer.pm
-```
-
-Then mount them into your LMS container (read-only) over the originals:
-
-```yaml
-services:
-  lms:
-    volumes:
-      - /path/to/lms-patches/Plugin.pm:/lms/Slim/Plugin/MusicMagic/Plugin.pm:ro
-      - /path/to/lms-patches/Importer.pm:/lms/Slim/Plugin/MusicMagic/Importer.pm:ro
-```
-
-> These patches address an upstream LMS MusicMagic plugin limitation (no path translation, despite `server.prefs` having an unused `pathmap` setting). If/when this is fixed upstream, these patches and volume mounts can be removed.
+When running MusicIP 1.8, this is unnecessary — leave Dynamic Path Conversion disabled, or don't install the plugin at all.
 
 ### SugarCube — Dynamic Path Conversion
 
