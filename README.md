@@ -173,11 +173,11 @@ Lyrion path (destination):  /music
 
 SugarCube has its own path translation pipeline independent of the patches above. When using MusicIP 1.9.b, enable and configure Dynamic Path Conversion in the SugarCube global settings:
 
-```
+\`\`\`
 Enable Dynamic Path Conversion: ✓ checked
 DPC (LMS) - Set #1 Destination:  /music
 DPC (MusicIP) - Set #1 Source:   Z:\music
-``
+\`\`\`
 
 
 ### ⚠️ MusicIP 1.9.b filter behaviour — stricter than 1.8
