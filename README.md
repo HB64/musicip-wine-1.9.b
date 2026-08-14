@@ -116,33 +116,6 @@ If your existing `.m3lib` contains `C:\music` paths (from an older version of th
 ```bash
 sed -i 's|C:\\music|Z:\\music|g' /path/to/appdata/default.m3lib
 ```
-
-## Parameters
-
-| Parameter | Function |
-|---|---|
-| `PUID` | User ID for file permissions (default: `1000`) |
-| `PGID` | Group ID for file permissions (default: `1000`) |
-| `LANG` / `LC_ALL` | Locale, e.g. `en_US.UTF-8` |
-| `-p 10002:10002` | MusicIP API |
-| `-v ...AppData/Roaming/MusicIP` | Persistent database and MusicIP user data |
-| `-v .../music:/music:ro` | Your music library, read-only (appears to MusicIP as `Z:\music`) |
-| `-v .../config:/config` | *(optional)* Persistent, editable `mmm.ini`, `recipes.xml` and `moods/` |
-| `--security-opt no-new-privileges:true` | Blocks privilege escalation via setuid binaries inside the container |
-| `--cap-drop ALL` + `--cap-add ...` | Restricts the container to only the capabilities its setup steps actually use |
-
-## Troubleshooting
-
-**Permission errors on volumes** — Make sure `PUID`/`PGID` match the owner of the mounted directories on the host.
-
-**Container won't start / "Operation not permitted" in logs** — Usually means one of the dropped capabilities is needed after all. Check which syscall or operation failed in the log and add the matching `--cap-add` back; the five listed above cover a stock setup.
-
-**Wine error messages in logs (Vulkan, Bluetooth, RPC/OLE)** — These are harmless. Wine logs errors for Windows subsystems MusicIP doesn't use. As long as `curl http://localhost:10002/api/version` responds, everything is fine.
-
-**Port conflict** — Change the host port, e.g. `-p 10003:10002`.
-
-**Music folder not found / "Add music folder" fails** — Confirm the container-side path in your volume mount (`compose.yaml`) matches what you enter in the web UI (see "Music path inside MusicIP" above). They must point to the same folder.
-
 ## Using with Lyrion Music Server (LMS)
 
 When MusicIP 1.9.b runs under Wine, it stores and returns paths in Windows format (`Z:\music\...`). LMS runs on Linux and expects `/music/...`. Two components need to handle this translation: the MusicMagic plugin patches (for Moods Mixer) and SugarCube's Dynamic Path Conversion (for SugarCube mixing).
@@ -179,6 +152,32 @@ DPC (LMS) - Set #1 Destination:  /music
 DPC (MusicIP) - Set #1 Source:   Z:\music
 \`\`\`
 
+
+## Parameters
+
+| Parameter | Function |
+|---|---|
+| `PUID` | User ID for file permissions (default: `1000`) |
+| `PGID` | Group ID for file permissions (default: `1000`) |
+| `LANG` / `LC_ALL` | Locale, e.g. `en_US.UTF-8` |
+| `-p 10002:10002` | MusicIP API |
+| `-v ...AppData/Roaming/MusicIP` | Persistent database and MusicIP user data |
+| `-v .../music:/music:ro` | Your music library, read-only (appears to MusicIP as `Z:\music`) |
+| `-v .../config:/config` | *(optional)* Persistent, editable `mmm.ini`, `recipes.xml` and `moods/` |
+| `--security-opt no-new-privileges:true` | Blocks privilege escalation via setuid binaries inside the container |
+| `--cap-drop ALL` + `--cap-add ...` | Restricts the container to only the capabilities its setup steps actually use |
+
+## Troubleshooting
+
+**Permission errors on volumes** — Make sure `PUID`/`PGID` match the owner of the mounted directories on the host.
+
+**Container won't start / "Operation not permitted" in logs** — Usually means one of the dropped capabilities is needed after all. Check which syscall or operation failed in the log and add the matching `--cap-add` back; the five listed above cover a stock setup.
+
+**Wine error messages in logs (Vulkan, Bluetooth, RPC/OLE)** — These are harmless. Wine logs errors for Windows subsystems MusicIP doesn't use. As long as `curl http://localhost:10002/api/version` responds, everything is fine.
+
+**Port conflict** — Change the host port, e.g. `-p 10003:10002`.
+
+**Music folder not found / "Add music folder" fails** — Confirm the container-side path in your volume mount (`compose.yaml`) matches what you enter in the web UI (see "Music path inside MusicIP" above). They must point to the same folder.
 
 ### ⚠️ MusicIP 1.9.b filter behaviour — stricter than 1.8
 
