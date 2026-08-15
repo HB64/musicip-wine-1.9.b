@@ -23,7 +23,7 @@ You only need to do anything here if you want to customize these files and have 
 ```yaml
 services:
   musicip:
-    image: hb1964/musicip-wine-1.9.b:latest
+    image: ghcr.io/hb64/musicip-wine-1.9.b:latest
     container_name: musicip
     restart: unless-stopped
     ports:
@@ -74,7 +74,7 @@ docker run -d \
   -v /path/to/appdata:"/home/wineuser/.wine32/drive_c/users/root/AppData/Roaming/MusicIP" \
   -v /path/to/music:/music:ro \
   --restart unless-stopped \
-  hb1964/musicip-wine-1.9.b:latest
+  ghcr.io/hb64/musicip-wine-1.9.b:latest
 ```
 
 The MusicIP API will be available at `http://localhost:10002`. Check it's up with:
