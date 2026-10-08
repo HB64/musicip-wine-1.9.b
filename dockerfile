@@ -18,9 +18,22 @@ ENV XDG_RUNTIME_DIR=/tmp/runtime-root
 ENV PUID=1000
 ENV PGID=1000
 
-COPY MusicIP /opt/MusicIP
-RUN sed -i 's/\r//' /opt/MusicIP/entrypoint.sh \
-    && mv /opt/MusicIP/entrypoint.sh /entrypoint.sh \
-    && chmod +x /entrypoint.sh
+COPY MusicIP /tmp/payload
+
+# Install the payload into the Wine install dir at build time. The user
+# config (mmm.ini, recipes.xml, moods) is moved to /opt/defaults and replaced
+# by symlinks into /config, so the server reads and writes the host copies.
+RUN set -e; \
+    P="/home/wineuser/.wine32/drive_c/Program Files/MusicIP"; \
+    mkdir -p "$P" /opt/defaults/moods; \
+    sed -i 's/\r//' /tmp/payload/entrypoint.sh; \
+    mv /tmp/payload/entrypoint.sh /entrypoint.sh; \
+    chmod +x /entrypoint.sh; \
+    mv /tmp/payload/mmm.ini /tmp/payload/recipes.xml /opt/defaults/; \
+    cp -a /tmp/payload/. "$P"/; \
+    rm -rf /tmp/payload; \
+    ln -s /config/mmm.ini "$P/mmm.ini"; \
+    ln -s /config/recipes.xml "$P/recipes.xml"; \
+    ln -s /config/moods "$P/moods"
 
 CMD ["/entrypoint.sh"]
