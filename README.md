@@ -155,6 +155,31 @@ DPC (MusicIP) - Set #1 Source:   Z:\music
 \`\`\`
 
 
+## Patched MusicMagicServer.exe (higher mix limits)
+
+The `MusicMagicServer.exe` in this image is a patched build of the original 1.9.b server. The stock server caps the size of a mix; the patched one raises those caps:
+
+| Limit | Stock | Patched |
+|---|---|---|
+| Tracks | 75 | 300 |
+| Minutes | 300 | 1000 |
+| MB | 300 | 1000 |
+
+The cap is enforced inside the server executable itself (the MusicIP Mixer executable has no such cap), so it can't be changed through configuration.
+
+**What changed:** 31 bytes; the file size is identical (3,059,712 bytes). The limits are stored as constants in the code and are changed in place. One clamp compared against a 1-byte constant (`cmp esi, 75`), which can't hold 300, so that instruction jumps to a small stub placed in unused zero padding at file offset `0x23EED0`; the stub does the same compare and clamp against 300. Nothing else is modified.
+
+| File | MD5 |
+|---|---|
+| Original `MusicMagicServer.exe` | `d83a71f4e42acdbcf4e35ae7780c234c` |
+| Patched `MusicMagicServer.exe` (this image) | `c37e760523243de07f8b24213aaf76ce` |
+
+To verify what your container is running:
+
+```bash
+docker exec musicip md5sum "/home/wineuser/.wine32/drive_c/Program Files/MusicIP/MusicMagicServer.exe"
+```
+
 ## Parameters
 
 | Parameter | Function |
