@@ -889,17 +889,34 @@
 })();
 </script>
 <script>
-  document.getElementById('custom-root-cb').addEventListener('change', function () {
+  (function () {
+    var cb = document.getElementById('custom-root-cb');
     var input = document.getElementById('add-root');
-    if (this.checked) {
-      input.style.display = 'block';
-      input.value = '';
-      input.focus();
-    } else {
-      input.style.display = 'none';
-      input.value = 'Z:\\music';
+    var KEY = 'mip-add-root';
+    function save() {
+      try { localStorage.setItem(KEY, cb.checked ? input.value : ''); } catch (e) {}
     }
-  });
+    cb.addEventListener('change', function () {
+      if (this.checked) {
+        input.style.display = 'block';
+        input.value = '';
+        input.focus();
+      } else {
+        input.style.display = 'none';
+        input.value = 'Z:\\music';
+      }
+      save();
+    });
+    input.addEventListener('input', save);
+    try {
+      var saved = localStorage.getItem(KEY);
+      if (saved) {
+        cb.checked = true;
+        input.style.display = 'block';
+        input.value = saved;
+      }
+    } catch (e) {}
+  })();
 </script>
 </body>
 </html>
